@@ -1,11 +1,12 @@
 from datetime import datetime
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 
 from .data import CONTACTS, EVENTS, PROGRAMS
 from .database import SessionLocal
 from .models import Donation, OutreachReport, Partner, Volunteer
+from .security import require_admin
 from .schemas import (
     DonationIntent,
     DonationRead,
@@ -76,7 +77,7 @@ def create_volunteer(payload: VolunteerCreate) -> VolunteerRead:
         return serialize_volunteer(item)
 
 
-@router.get("/api/volunteers", response_model=list[VolunteerRead])
+@router.get("/api/volunteers", response_model=list[VolunteerRead, dependencies=[Depends(require_admin)])
 def list_volunteers(limit: int = Query(default=50, ge=1, le=200)) -> list[VolunteerRead]:
     with SessionLocal() as db:
         rows = db.scalars(
@@ -102,7 +103,7 @@ def create_partner(payload: PartnerCreate) -> PartnerRead:
         return serialize_partner(item)
 
 
-@router.get("/api/partners", response_model=list[PartnerRead])
+@router.get("/api/partners", response_model=list[PartnerRead, dependencies=[Depends(require_admin)])
 def list_partners(limit: int = Query(default=50, ge=1, le=200)) -> list[PartnerRead]:
     with SessionLocal() as db:
         rows = db.scalars(
@@ -127,7 +128,7 @@ def create_donation_intent(payload: DonationIntent) -> DonationRead:
         return serialize_donation(item)
 
 
-@router.get("/api/donations", response_model=list[DonationRead])
+@router.get("/api/donations", response_model=list[DonationRead, dependencies=[Depends(require_admin)])
 def list_donations(limit: int = Query(default=50, ge=1, le=200)) -> list[DonationRead]:
     with SessionLocal() as db:
         rows = db.scalars(
@@ -153,7 +154,7 @@ def create_outreach_report(payload: OutreachReportCreate) -> OutreachReportRead:
         return serialize_report(item)
 
 
-@router.get("/api/outreach-reports", response_model=list[OutreachReportRead])
+@router.get("/api/outreach-reports", response_model=list[OutreachReportRead, dependencies=[Depends(require_admin)])
 def list_outreach_reports(
     limit: int = Query(default=50, ge=1, le=200)
 ) -> list[OutreachReportRead]:
