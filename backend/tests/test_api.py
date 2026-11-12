@@ -41,6 +41,11 @@ def test_private_lists_require_admin_token(client):
         assert client.get(path, headers={"X-Admin-Token": "test-admin-token"}).status_code == 200
 
 
+def test_private_lists_reject_non_ascii_token(client):
+    response = client.get("/api/donations", headers=[(b"x-admin-token", b"wrong-\xff")])
+    assert response.status_code == 401
+
+
 def test_private_lists_fail_closed_without_configured_token(client, monkeypatch):
     monkeypatch.setattr(settings, "admin_api_token", None)
     response = client.get("/api/donations", headers={"X-Admin-Token": "anything"})
